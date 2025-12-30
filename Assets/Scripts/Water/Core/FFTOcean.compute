@@ -1,0 +1,280 @@
+// FFTOcean.compute
+// Sea of Thieves Style Ocean - Compute Shader
+// Based on Tessendorf's iWave paper "Simulating Ocean Water"
+
+#pragma kernel InitSpectrum
+#pragma kernel UpdateSpectrum
+#pragma kernel FFT_Stockham
+#pragma kernel AssembleDisplacement
+
+// ========================
+// Constants
+// ========================
+#define PI 3.14159265358979323846
+#define G 9.81 // Gravity
+
+// ========================
+// Buffers & Textures
+// ========================
+RWTexture2D<float4> _SpectrumH0;
+RWTexture2D<float4> _SpectrumH0Conj;
+RWTexture2D<float4> _SpectrumHt;        // H (xy), Dx (zw)
+RWTexture2D<float4> _SpectrumHt2;       // Dz (xy), J_trace (zw)
+RWTexture2D<float4> _DisplacementMap;
+RWTexture2D<float4> _NormalFoamMap;
+
+// Generic buffers for IFFT passes
+RWTexture2D<float4> _FFTRead;
+RWTexture2D<float4> _FFTWrite;
+
+// Assembly buffers
+RWTexture2D<float4> _FFTBufferB;
+RWTexture2D<float4> _FFTBufferB2;
+
+// ========================
+// Parameters
+// ========================
+int _Resolution;            // e.g., 256
+float _OceanSize;           // Physical size in world units
+float _WaveAmplitude;       // Scale factor
+float _Choppiness;          // Horizontal displacement strength
+float _FoamBias;            // Controls foam threshold
+
+// FFT Parameters / runtime inputs
+int _Stage;        // FFT stage (0..log2(N)-1)
+int _PingPong;     // 0 = Horizontal, 1 = Vertical
+float2 _WindDirection; // normalized wind direction (x,z)
+float _WindSpeed;   // Wind speed (m/s)
+float _Time;        // Simulation time
+
+// ========================
+// Utility Functions
+// ========================
+
+// Complex number multiplication: (a + bi) * (c + di)
+float2 ComplexMul(float2 a, float2 b)
+{
+    return float2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x);
+}
+
+// Gaussian random number generator (Box-Muller transform)
+float2 GaussianRandom(float2 uv)
+{
+    float u1 = frac(sin(dot(uv, float2(12.9898, 78.233))) * 43758.5453);
+    float u2 = frac(sin(dot(uv, float2(93.9898, 67.345))) * 24634.6345);
+    
+    u1 = max(u1, 0.0001); // Avoid log(0)
+    
+    float r = sqrt(-2.0 * log(u1));
+    float theta = 2.0 * PI * u2;
+    
+    return float2(r * cos(theta), r * sin(theta));
+}
+
+// Phillips Spectrum - describes the shape of ocean waves based on wind
+float PhillipsSpectrum(float2 k)
+{
+    float kLength = length(k);
+    if (kLength < 0.0001) return 0.0;
+    
+    float kLength2 = kLength * kLength;
+    float kLength4 = kLength2 * kLength2;
+    
+    // Largest possible wave from wind
+    float L = _WindSpeed * _WindSpeed / G;
+    float L2 = L * L;
+    
+    // Dampen small waves
+    float smallWaveDamping = 0.001;
+    float l2 = L2 * smallWaveDamping * smallWaveDamping;
+    
+    // Direction alignment with wind
+    float2 kNorm = k / kLength;
+    float kDotWind = dot(kNorm, _WindDirection);
+    float kDotWind2 = kDotWind * kDotWind;
+    
+    // Phillips spectrum formula - significantly boosted for visibility
+    float phillips = (_WaveAmplitude * 0.1) * exp(-1.0 / (kLength2 * L2)) / (kLength4 + 0.001) * kDotWind2;
+    
+    // Dampen waves going against the wind
+    if (kDotWind < 0.0)
+        phillips *= 0.25;
+    
+    // Dampen small waves
+    phillips *= exp(-kLength2 * l2);
+    
+    return phillips;
+}
+
+// Wave dispersion relation: ω(k) = sqrt(g * |k|)
+float Dispersion(float2 k)
+{
+    return sqrt(G * length(k));
+}
+
+// ========================
+// Kernels
+// ========================
+
+// Kernel 1: Initialize the spectrum (h0 and h0*)
+[numthreads(8, 8, 1)]
+void InitSpectrum(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= (uint)_Resolution || id.y >= (uint)_Resolution) return;
+    
+    // Wave vector k
+    float n = id.x - _Resolution * 0.5;
+    float m = id.y - _Resolution * 0.5;
+    float2 k = float2(2.0 * PI * n / _OceanSize, 2.0 * PI * m / _OceanSize);
+    
+    // Gaussian random numbers
+    float2 uv = float2(id.xy) / (float)_Resolution;
+    float2 gaussian = GaussianRandom(uv);
+    
+    // h0(k) = 1/sqrt(2) * (ξr + i*ξi) * sqrt(P(k))
+    float phillips = sqrt(PhillipsSpectrum(k));
+    float2 h0 = gaussian * phillips * 0.70710678118; // 1/sqrt(2)
+    
+    // Proper Hermitian symmetry: H(-k) = conj(H(k))
+    uint2 mirror = uint2((_Resolution - id.x) % _Resolution, (_Resolution - id.y) % _Resolution);
+    
+    _SpectrumH0[id.xy] = float4(h0, 0, 0);
+    _SpectrumH0Conj[mirror] = float4(h0.x, -h0.y, 0, 0);
+}
+
+// Kernel 2: Update spectrum with time evolution
+[numthreads(8, 8, 1)]
+void UpdateSpectrum(uint3 id : SV_DispatchThreadID)
+{
+    uint res = (uint)_Resolution;
+    if (id.x >= res || id.y >= res) return;
+    
+    // Wave vector k
+    float n = (float)id.x - (float)res * 0.5f;
+    float m = (float)id.y - (float)res * 0.5f;
+    float2 k = float2(2.0f * PI * n / _OceanSize, 2.0f * PI * m / _OceanSize);
+    
+    float omega = Dispersion(k);
+    
+    // e^(i * omega * t)
+    float cosOmega = cos(omega * _Time);
+    float sinOmega = sin(omega * _Time);
+    float2 expPos = float2(cosOmega, sinOmega);
+    float2 expNeg = float2(cosOmega, -sinOmega);
+    
+    float2 h0 = _SpectrumH0[id.xy].xy;
+    float2 h0Conj = _SpectrumH0Conj[id.xy].xy;
+    
+    // h(k, t) = h0(k) * exp(i*ω*t) + h0*(-k) * exp(-i*ω*t)
+    float2 ht = ComplexMul(h0, expPos) + ComplexMul(h0Conj, expNeg);
+    
+    // Choppiness components
+    float kLength = length(k);
+    float2 kUnit = kLength > 0.0001f ? k / kLength : float2(0.0f, 0.0f);
+    
+    // Dx = -i * kx/|k| * h(k,t)
+    // Dz = -i * kz/|k| * h(k,t)
+    float2 dx = float2(ht.y * kUnit.x, -ht.x * kUnit.x);
+    float2 dz = float2(ht.y * kUnit.y, -ht.x * kUnit.y);
+    
+    // Jacobian trace approximation
+    float2 jTrace = float2(-ht.x * kLength, -ht.y * kLength);
+    
+    _SpectrumHt[id.xy] = float4(ht, dx);
+    _SpectrumHt2[id.xy] = float4(dz, jTrace);
+}
+
+// Kernel 3 & 4: IFFT (Cooley-Tukey Radix-2)
+// Horizontal pass
+// Kernel 3: FFT Stockham (1D)
+[numthreads(8,8,1)]
+void FFT_Stockham(uint3 id : SV_DispatchThreadID)
+{
+    uint N = _Resolution;
+    if (id.x >= N || id.y >= N) return;
+
+    uint stageSize = 1 << (_Stage + 1);
+    uint halfSize  = stageSize >> 1;
+
+    uint j = (_PingPong == 0) ? id.x : id.y;
+    uint i = (_PingPong == 0) ? id.y : id.x;
+
+    uint group = j / stageSize;
+    uint pair  = j % halfSize;
+
+    uint indexA = group * stageSize + pair;
+    uint indexB = indexA + halfSize;
+
+    float angle = -2.0 * PI * pair / stageSize;
+    float2 w = float2(cos(angle), sin(angle));
+
+    uint2 coordA = (_PingPong == 0) ? uint2(indexA, i) : uint2(i, indexA);
+    uint2 coordB = (_PingPong == 0) ? uint2(indexB, i) : uint2(i, indexB);
+
+    float4 A = _FFTRead[coordA];
+    float4 B = _FFTRead[coordB];
+
+    // FFT butterfly
+    float2 Bxy = float2(
+        B.x * w.x - B.y * w.y,
+        B.x * w.y + B.y * w.x
+    );
+
+    float2 Bzw = float2(
+        B.z * w.x - B.w * w.y,
+        B.z * w.y + B.w * w.x
+    );
+
+    float4 outA = float4(A.xy + Bxy, A.zw + Bzw);
+    float4 outB = float4(A.xy - Bxy, A.zw - Bzw);
+
+    uint2 outCoordA = (_PingPong == 0) ? uint2(group * stageSize + pair, i)
+                                       : uint2(i, group * stageSize + pair);
+
+    uint2 outCoordB = (_PingPong == 0) ? uint2(group * stageSize + pair + halfSize, i)
+                                       : uint2(i, group * stageSize + pair + halfSize);
+
+    _FFTWrite[outCoordA] = outA;
+    _FFTWrite[outCoordB] = outB;
+}
+
+// Kernel 5: Assemble final displacement and normals
+[numthreads(8, 8, 1)]
+void AssembleDisplacement(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= (uint)_Resolution || id.y >= (uint)_Resolution) return;
+    
+    float4 data1 = _FFTBufferB[id.xy];  // H (x), Dx (z)
+    float4 data2 = _FFTBufferB2[id.xy]; // Dz (x), J_trace (z)
+    
+    float sign = ((id.x + id.y) % 2 == 0) ? 1.0 : -1.0;
+    
+    // Correct scaling applied after FFT
+    float height = data1.x * sign * _WaveAmplitude;
+    float disX = data1.z * sign * _Choppiness;
+    float disZ = data2.x * sign * _Choppiness;
+    float jTrace = data2.z * sign;
+    
+    // Displacement map: X, Y, Z
+    _DisplacementMap[id.xy] = float4(disX, height, disZ, 1.0);
+    
+    // Normals from height gradient
+    float texelSize = _OceanSize / (float)_Resolution;
+    
+    uint res = (uint)_Resolution;
+    float hL = _FFTBufferB[uint2((id.x - 1 + res) % res, id.y)].x * (((id.x - 1 + id.y) % 2 == 0) ? 1.0 : -1.0);
+    float hR = _FFTBufferB[uint2((id.x + 1) % res, id.y)].x * (((id.x + 1 + id.y) % 2 == 0) ? 1.0 : -1.0);
+    float hD = _FFTBufferB[uint2(id.x, (id.y - 1 + res) % res)].x * (((id.x + id.y - 1) % 2 == 0) ? 1.0 : -1.0);
+    float hU = _FFTBufferB[uint2(id.x, (id.y + 1) % res)].x * (((id.x + id.y + 1) % 2 == 0) ? 1.0 : -1.0);
+    
+    float2 gradient = float2(hR - hL, hU - hD) / (2.0 * texelSize);
+    float3 normalWS = normalize(float3(-gradient.x, 1.0, -gradient.y));
+    
+    // Foam from Jacobian (improved)
+    // J = 1 + lambda * trace
+    float J = 1.0 + jTrace * _Choppiness;
+    float foam = saturate((1.0 - J - _FoamBias) * 3.0);
+    
+    // Map colors: R=X, G=Z, B=Up(Y) to look light-blue
+    _NormalFoamMap[id.xy] = float4(normalWS.x * 0.5 + 0.5, normalWS.z * 0.5 + 0.5, normalWS.y * 0.5 + 0.5, foam);
+}

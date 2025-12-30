@@ -12,6 +12,11 @@ public class PlayerController : MonoBehaviour
     public float acceleration = 10f;
     public float deceleration = 10f;
 
+    [Header("External Modifiers")]
+    [Tooltip("Multiplicador de velocidade externo (usado pelo WaterInteractor)")]
+    [HideInInspector]
+    public float speedMultiplier = 1f;
+
     [Header("Jump Settings")]
     public float jumpHeight = 2f;
     public float gravityScale = 2f;
@@ -216,7 +221,7 @@ public class PlayerController : MonoBehaviour
             movement = cameraRight * input.x + cameraForward * input.z;
             movement.Normalize();
 
-            smoothMovement = Vector3.Lerp(smoothMovement, movement * currentSpeed, acceleration * Time.deltaTime);
+            smoothMovement = Vector3.Lerp(smoothMovement, movement * currentSpeed * speedMultiplier, acceleration * Time.deltaTime);
 
             if (movement != Vector3.zero)
             {
