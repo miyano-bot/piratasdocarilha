@@ -1,14 +1,14 @@
 using UnityEngine;
+using Crest;
 
 /// <summary>
-/// Representa um ponto de amostragem para o sistema de buoyancy.
-/// Múltiplos pontos permitem orientação realista com as ondas.
+/// Representa um ponto de amostragem para o sistema de buoyancy do Crest.
 /// </summary>
 public class BuoyancyPoint : MonoBehaviour
 {
     [Header("Configuration")]
     [Tooltip("Influência deste ponto na força total (0-1)")]
-    [Range(0f, 1f)]
+    [UnityEngine.Range(0f, 1f)]
     public float weight = 1f;
 
     [Tooltip("Offset vertical para ajuste fino")]
@@ -39,23 +39,20 @@ public class BuoyancyPoint : MonoBehaviour
     public bool IsSubmerged => CurrentDepth > 0;
 
     /// <summary>
-    /// Atualiza a detecção de água neste ponto
+    /// Atualiza a detecção de água neste ponto usando dados do Crest
     /// </summary>
-    public void UpdateWaterDetection(WaterSurface waterSurface)
+    public void SetWaterData(float waterHeight)
     {
-        if (waterSurface == null) return;
-
-        Vector3 pos = SamplePosition;
-        WaterHeight = waterSurface.GetWaterHeight(pos);
-        CurrentDepth = WaterHeight - pos.y;
+        WaterHeight = waterHeight;
+        CurrentDepth = WaterHeight - SamplePosition.y;
     }
 
     private void OnDrawGizmos()
     {
         if (!showGizmo) return;
 
-        Gizmos.color = gizmoColor;
-        Gizmos.DrawWireSphere(SamplePosition, 0.15f);
+        Gizmos.color = IsSubmerged ? Color.blue : gizmoColor;
+        Gizmos.DrawWireSphere(SamplePosition, 0.15f * weight);
 
         // Linha indicando direção para cima
         Gizmos.DrawLine(SamplePosition, SamplePosition + Vector3.up * 0.3f);

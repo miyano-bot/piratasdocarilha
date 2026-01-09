@@ -201,11 +201,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1296005282}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!4 &210550638 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 466052285357088735, guid: e9bc18759f6e9b84ea73695e3f1a9bfd, type: 3}
-  m_PrefabInstance: {fileID: 733298666}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &213198549 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1524411113276028, guid: e2aafa8770d34a9591b41bedf4e318ba, type: 3}
@@ -388,6 +383,7 @@ GameObject:
   - component: {fileID: 330585548}
   - component: {fileID: 330585550}
   - component: {fileID: 330585549}
+  - component: {fileID: 330585551}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -590,11 +586,86 @@ MonoBehaviour:
   baseFOV: 70
   sprintFOV: 85
   fovSmoothSpeed: 5
---- !u!4 &406798903 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: -6656243471903276652, guid: e9bc18759f6e9b84ea73695e3f1a9bfd, type: 3}
-  m_PrefabInstance: {fileID: 733298666}
+--- !u!114 &330585551
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 330585543}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b0c0a69611596146aceb2f60532940c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Crest::Crest.UnderwaterRenderer
+  _version: 0
+  _mode: 0
+  _filterOceanData: 13
+  _meniscus: 1
+  _depthFogDensityFactor: 1
+  _volumeGeometry: {fileID: 0}
+  _invertCulling: 0
+  _enableShaderAPI: 0
+  _copyOceanMaterialParamsEachFrame: 1
+  _farPlaneMultiplier: 0.68
+  _debug:
+    _viewOceanMask: 0
+    _disableOceanMask: 0
+    _viewStencil: 0
+    _disableHeightAboveWaterOptimization: 0
+    _disableArtifactCorrection: 0
+--- !u!1 &379425385
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 379425387}
+  - component: {fileID: 379425386}
+  m_Layer: 0
+  m_Name: ObjectPlacer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &379425386
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 379425385}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c33ba5f9ba0286b4fb41b78b86317002, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldGeneration.ObjectPlacer
+  noiseGenerator: {fileID: 0}
+  biomeManager: {fileID: 0}
+  chunkManager: {fileID: 0}
+  placeableObjects: []
+  poissonSampleAttempts: 30
+  maxObjectsPerChunk: 500
+  useObjectPooling: 1
+  poolSizePerType: 100
+--- !u!4 &379425387
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 379425385}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1530613710}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
@@ -1294,43 +1365,6 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 95277174}
   m_SourcePrefab: {fileID: 100100000, guid: e9bc18759f6e9b84ea73695e3f1a9bfd, type: 3}
---- !u!84 &766188557
-RenderTexture:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: DisplacementMap
-  m_ImageContentsHash:
-    serializedVersion: 2
-    Hash: 00000000000000000000000000000000
-  m_IsAlphaChannelOptional: 0
-  serializedVersion: 6
-  m_Width: 512
-  m_Height: 512
-  m_AntiAliasing: 1
-  m_MipCount: -1
-  m_DepthStencilFormat: 0
-  m_ColorFormat: 52
-  m_MipMap: 0
-  m_GenerateMips: 1
-  m_SRGB: 0
-  m_UseDynamicScale: 0
-  m_UseDynamicScaleExplicit: 0
-  m_BindMS: 0
-  m_EnableCompatibleFormat: 1
-  m_EnableRandomWrite: 1
-  m_TextureSettings:
-    serializedVersion: 2
-    m_FilterMode: 1
-    m_Aniso: 1
-    m_MipBias: 0
-    m_WrapU: 0
-    m_WrapV: 0
-    m_WrapW: 0
-  m_Dimension: 2
-  m_VolumeDepth: 1
-  m_ShadowSamplingMode: 2
 --- !u!1 &802675601
 GameObject:
   m_ObjectHideFlags: 0
@@ -1344,8 +1378,7 @@ GameObject:
   - component: {fileID: 802675606}
   - component: {fileID: 802675605}
   - component: {fileID: 802675604}
-  - component: {fileID: 802675603}
-  - component: {fileID: 802675602}
+  - component: {fileID: 802675609}
   m_Layer: 6
   m_Name: Barco
   m_TagString: Untagged
@@ -1353,59 +1386,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &802675602
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 802675601}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 19a600634da002a41a85c4fd4dafe1fd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BoatController
-  thrustForce: 30
-  maxSpeed: 15
-  turnTorque: 20
-  maxTurnSpeed: 60
-  waterDrag: 0
-  waterAngularDrag: 0
-  minSpeedToTurn: 0.5
-  thrustAxis: Vertical
-  turnAxis: Horizontal
-  boostKey: 304
-  boostMultiplier: 1.5
-  wakeParticles: {fileID: 0}
-  particleSpeedThreshold: 2
-  isControllable: 1
-  pilotPosition: {fileID: 76772281}
-  requireWaterForMovement: 1
-  showDebugVectors: 1
-  showDebugInfo: 1
---- !u!114 &802675603
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 802675601}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a699c4dab9e55494db1571bc48e5653e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Buoyancy
-  buoyancyForce: 100
-  objectDensity: 0.5
-  floatHeight: 0.5
-  verticalDamping: 3
-  angularDamping: 4
-  waveResponse: 0.2
-  alignmentSpeed: 2
-  buoyancyPoints: []
-  autoDetectPoints: 1
-  updateInterval: 1
-  showDebugForces: 0
 --- !u!54 &802675604
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1414,7 +1394,7 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 802675601}
   serializedVersion: 5
-  m_Mass: 50
+  m_Mass: 500
   m_LinearDamping: 1
   m_AngularDamping: 2
   m_CenterOfMass: {x: 0, y: 0, z: 0}
@@ -1430,9 +1410,9 @@ Rigidbody:
   m_ImplicitTensor: 1
   m_UseGravity: 1
   m_IsKinematic: 0
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_Constraints: 0
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
 --- !u!65 &802675605
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1530,6 +1510,44 @@ Transform:
   - {fileID: 76772281}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &802675609
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 802675601}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ebb499a376b0c094f92b8f70c0966934, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Crest::Crest.BoatProbes
+  _version: 0
+  _centerOfMass: {x: 0, y: 0, z: 0}
+  _forcePoints:
+  - _weight: 1
+    _offsetPosition: {x: 0.5, y: 0, z: 0.5}
+  - _weight: 1
+    _offsetPosition: {x: -0.5, y: 0, z: 0.5}
+  - _weight: 1
+    _offsetPosition: {x: -0.5, y: 0, z: -0.5}
+  - _weight: 1
+    _offsetPosition: {x: 0.5, y: 0, z: -0.5}
+  _forceHeightOffset: 0
+  _forceMultiplier: 10
+  _minSpatialLength: 12
+  _turningHeel: 0.35
+  _maximumBuoyancyForce: Infinity
+  _dragInWaterUp: 3
+  _dragInWaterRight: 2
+  _dragInWaterForward: 1
+  _enginePower: 7
+  _turnPower: 0.5
+  _playerControlled: 0
+  _engineBias: 0
+  _turnBias: 0
+  _debug:
+    _drawQueries: 0
 --- !u!43 &996000034
 Mesh:
   m_ObjectHideFlags: 0
@@ -1708,6 +1726,97 @@ Mesh:
       - serializedVersion: 1
         m_IndexStart: 0
         m_IndexCount: 0
+--- !u!1 &1123930194
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1123930196}
+  - component: {fileID: 1123930195}
+  m_Layer: 0
+  m_Name: BiomeManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1123930195
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1123930194}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b08f6e3b1fe2065458fd80efeeff679b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldGeneration.BiomeManager
+  noiseGenerator: {fileID: 0}
+  chunkManager: {fileID: 0}
+  biomeLayers:
+  - name: Sand
+    albedoTexture: {fileID: 0}
+    normalTexture: {fileID: 0}
+    tintColor: {r: 1, g: 1, b: 1, a: 1}
+    minHeight: 0
+    maxHeight: 0.1
+    minSlope: 0
+    maxSlope: 0.3
+    blendStrength: 0.1
+    textureScale: 10
+  - name: Grass
+    albedoTexture: {fileID: 0}
+    normalTexture: {fileID: 0}
+    tintColor: {r: 1, g: 1, b: 1, a: 1}
+    minHeight: 0.05
+    maxHeight: 0.5
+    minSlope: 0
+    maxSlope: 0.4
+    blendStrength: 0.1
+    textureScale: 10
+  - name: Rock
+    albedoTexture: {fileID: 0}
+    normalTexture: {fileID: 0}
+    tintColor: {r: 1, g: 1, b: 1, a: 1}
+    minHeight: 0.3
+    maxHeight: 1
+    minSlope: 0.35
+    maxSlope: 1
+    blendStrength: 0.1
+    textureScale: 10
+  - name: Snow
+    albedoTexture: {fileID: 0}
+    normalTexture: {fileID: 0}
+    tintColor: {r: 1, g: 1, b: 1, a: 1}
+    minHeight: 0.7
+    maxHeight: 1
+    minSlope: 0
+    maxSlope: 0.5
+    blendStrength: 0.1
+    textureScale: 10
+  terrainShader: {fileID: 0}
+  generatedMaterial: {fileID: 0}
+  splatmapResolution: 512
+  generateSplatmaps: 1
+--- !u!4 &1123930196
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1123930194}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1530613710}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1296005278 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: e9bc18759f6e9b84ea73695e3f1a9bfd, type: 3}
@@ -1841,9 +1950,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9ec6d10c8a5e10e41bb4d3c6f93b43c0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WaterInteractor
-  feetPoint: {fileID: 202155031}
-  waistPoint: {fileID: 210550638}
-  headPoint: {fileID: 406798903}
+  feetPoint: {fileID: 0}
+  waistPoint: {fileID: 0}
+  headPoint: {fileID: 0}
   wadingDepth: 0.1
   swimmingDepth: 1.2
   wadingSpeedMultiplier: 0.6
@@ -2016,6 +2125,71 @@ MonoBehaviour:
   verticalOffset: 0
   showGizmo: 1
   gizmoColor: {r: 0, g: 1, b: 1, a: 1}
+--- !u!1 &1530613708
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1530613710}
+  - component: {fileID: 1530613709}
+  m_Layer: 0
+  m_Name: WorldGenerator
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1530613709
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1530613708}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f15359bd23c8e084d801a1fe308ab961, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldGeneration.WorldGenerator
+  worldSeed: 42
+  randomSeedOnStart: 1
+  noiseGenerator: {fileID: 2067526218}
+  chunkManager: {fileID: 2063570934}
+  biomeManager: {fileID: 1123930195}
+  objectPlacer: {fileID: 379425386}
+  generateOnStart: 1
+  placeObjectsAutomatically: 1
+  OnWorldGenerationStarted:
+    m_PersistentCalls:
+      m_Calls: []
+  OnWorldGenerationCompleted:
+    m_PersistentCalls:
+      m_Calls: []
+  OnChunkGenerated:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!4 &1530613710
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1530613708}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 2067526219}
+  - {fileID: 2063570935}
+  - {fileID: 1123930196}
+  - {fileID: 379425387}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1587701036 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 3f0f1fa721dbedf4e9b227547539d6aa, type: 3}
@@ -2133,48 +2307,13 @@ GameObject:
   - component: {fileID: 1677181299}
   - component: {fileID: 1677181298}
   - component: {fileID: 1677181297}
-  - component: {fileID: 1677181296}
-  - component: {fileID: 1677181295}
   m_Layer: 0
   m_Name: Aguinha
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1677181295
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1677181294}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56ee1ac96a302ff43978a78c4ae4831e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::WaterSurface
-  waveMode: 1
-  waveSettings: {fileID: 0}
-  waterMaterial: {fileID: 2100000, guid: ab4afa7d83934aa44a3e0ad396cd4724, type: 2}
-  shaderUpdateInterval: 0.016
-  showDebugGizmos: 0
-  debugSamplePoint: {x: 0, y: 0, z: 0}
---- !u!114 &1677181296
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1677181294}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 25280af438644c64db6f6b3a8b0e1b8e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::WaterMeshGenerator
-  size: 256
-  resolution: 254
-  generateOnStart: 1
+  m_IsActive: 0
 --- !u!23 &1677181297
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -2182,7 +2321,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1677181294}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -2306,6 +2445,8 @@ GameObject:
   - component: {fileID: 1920944268}
   - component: {fileID: 1920944267}
   - component: {fileID: 1920944266}
+  - component: {fileID: 1920944270}
+  - component: {fileID: 1920944269}
   m_Layer: 3
   m_Name: Terrain
   m_TagString: Untagged
@@ -2388,6 +2529,71 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!23 &1920944269
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1920944265}
+  m_Enabled: 1
+  m_CastShadows: 1
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials: []
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &1920944270
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1920944265}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cfad533f4c23e4346a6eb03e931a7e5a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Crest::Crest.RegisterSeaFloorDepthInput
+  _checkShaderName: 1
+  _checkShaderPasses: 1
+  _disableRenderer: 1
+  _version: 0
+  _assignOceanDepthMaterial: 1
+  _relative: 0
 --- !u!1001 &1948482483
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2464,38 +2670,15 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2016374953}
-  - component: {fileID: 2016374952}
-  m_Layer: 0
+  - component: {fileID: 2016374955}
+  - component: {fileID: 2016374954}
+  m_Layer: 4
   m_Name: FFTOceanController
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &2016374952
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2016374951}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 86e671b2ce9179d4eb4068e4fb530807, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Water.Core.FFTWaterController
-  fftOceanShader: {fileID: 7200000, guid: 815336de60bc14f499b8e0244be2a740, type: 3}
-  resolution: 256
-  oceanSize: 300
-  windDirection: {x: 0.97014254, y: 0.24253564}
-  windSpeed: 30
-  waveAmplitude: 0.002
-  choppiness: 0.002
-  foamBias: 0.05
-  timeScale: 1
-  debugReadback: 0
-  displacementMap: {fileID: 766188557}
-  normalFoamMap: {fileID: 2056713801}
 --- !u!4 &2016374953
 Transform:
   m_ObjectHideFlags: 0
@@ -2511,43 +2694,231 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!84 &2056713801
-RenderTexture:
+--- !u!114 &2016374954
+MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: NormalFoamMap
-  m_ImageContentsHash:
-    serializedVersion: 2
-    Hash: 00000000000000000000000000000000
-  m_IsAlphaChannelOptional: 0
+  m_GameObject: {fileID: 2016374951}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a57126133720c243a7af00a156c9ee8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Crest::Crest.ShapeFFT
+  _spectrum: {fileID: 0}
+  _spectrumFixedAtRuntime: 1
+  _overrideGlobalWindDirection: 0
+  _waveDirectionHeadingAngle: 0
+  _overrideGlobalWindSpeed: 0
+  _windSpeed: 20
+  _respectShallowWaterAttenuation: 1
+  _weight: 1
+  _blendMode: 0
+  _queue: 0
+  _resolution: 128
+  _featherWidth: 0
+  _overrideSplineSettings: 0
+  _radius: 50
+  _subdivisions: 1
+  _featherWaveStart: 0.1
+  _version: 1
+  _overrideGlobalWindTurbulence: 0
+  _windTurbulence: 0.145
+  _maxVerticalDisplacement: 10
+  _maxHorizontalDisplacement: 15
+  _enableBakedCollision: 0
+  _timeResolution: 4
+  _smallestWavelengthRequired: 2
+  _timeLoopLength: 32
+  _debug:
+    _drawBounds: 0
+    _drawSlicesInEditor: 0
+--- !u!114 &2016374955
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2016374951}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dde37eff0f7685f41902f400d1de0c6c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Crest::Crest.OceanRenderer
+  _version: 0
+  _globalWindZone: {fileID: 0}
+  _globalWindSpeed: 150
+  _globalWindDirectionAngle: 0
+  _globalWindTurbulence: 0.145
+  _viewpoint: {fileID: 0}
+  _camera: {fileID: 0}
+  _teleportThreshold: 10
+  _timeProvider: {fileID: 0}
+  _primaryLight: {fileID: 410087040}
+  _searchForPrimaryLightOnStartup: 1
+  _material: {fileID: 2100000, guid: 9def92ac79181fe41b238e91663f0fad, type: 2}
+  _waterTilePrefab: {fileID: 0}
+  _layerName: 
+  _layer: 4
+  _overrideGravity: 0
+  _gravity: -9.8
+  _gravityMultiplier: 1
+  _waterBodyCulling: 1
+  _minScale: 8
+  _maxScale: 256
+  _dropDetailHeightBasedOnWaves: 0.2
+  _lodDataResolution: 384
+  _geometryDownSampleFactor: 2
+  _lodCount: 7
+  _extentsSizeMultiplier: 100
+  _simSettingsAnimatedWaves: {fileID: 0}
+  _createSeaFloorDepthData: 1
+  _simSettingsSeaFloorDepth: {fileID: 0}
+  _createFoamSim: 1
+  _simSettingsFoam: {fileID: 0}
+  _createDynamicWaveSim: 0
+  _simSettingsDynamicWaves: {fileID: 0}
+  _createFlowSim: 0
+  _simSettingsFlow: {fileID: 0}
+  _createShadowData: 0
+  _simSettingsShadow: {fileID: 0}
+  _createClipSurfaceData: 1
+  _simSettingsClipSurface: {fileID: 0}
+  _defaultClippingState: 0
+  _createAlbedoData: 0
+  _settingsAlbedo: {fileID: 0}
+  _surfaceSelfIntersectionFixMode: 2
+  _underwaterCullLimit: 0.001
+  _fixFlickeringParticleInput: 0
+  _enableRenderQueueSorting: 0
+  _showOceanProxyPlane: 0
+  _editModeFPS: 30
+  _followSceneCamera: 1
+  _heightQueries: 1
+  _debug:
+    _attachDebugGUI: 0
+    _showOceanTileGameObjects: 0
+    _disableFollowViewpoint: 0
+    _destroyResourcesInOnDisable: 0
+    _forceBatchMode: 0
+    _forceNoGPU: 0
+--- !u!1 &2063570933
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
-  m_Width: 512
-  m_Height: 512
-  m_AntiAliasing: 1
-  m_MipCount: -1
-  m_DepthStencilFormat: 0
-  m_ColorFormat: 52
-  m_MipMap: 0
-  m_GenerateMips: 1
-  m_SRGB: 0
-  m_UseDynamicScale: 0
-  m_UseDynamicScaleExplicit: 0
-  m_BindMS: 0
-  m_EnableCompatibleFormat: 1
-  m_EnableRandomWrite: 1
-  m_TextureSettings:
-    serializedVersion: 2
-    m_FilterMode: 1
-    m_Aniso: 1
-    m_MipBias: 0
-    m_WrapU: 0
-    m_WrapV: 0
-    m_WrapW: 0
-  m_Dimension: 2
-  m_VolumeDepth: 1
-  m_ShadowSamplingMode: 2
+  m_Component:
+  - component: {fileID: 2063570935}
+  - component: {fileID: 2063570934}
+  m_Layer: 0
+  m_Name: ChunkManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2063570934
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2063570933}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4039f6c80fb2bc940bb559aeee5875e2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldGeneration.ChunkManager
+  noiseGenerator: {fileID: 0}
+  playerTransform: {fileID: 1296005282}
+  terrainMaterial: {fileID: 2100000, guid: dc70b8a918d275c4f896a49b47ebb1fb, type: 2}
+  chunkSize: 100
+  chunkResolution: 128
+  viewDistanceInChunks: 5
+  updateInterval: 0.5
+  lodDistances: 01000000020000000400000008000000
+  useLOD: 1
+  initialPoolSize: 25
+  generateColliders: 1
+  maxChunksPerFrame: 2
+--- !u!4 &2063570935
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2063570933}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1530613710}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2067526217
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2067526219}
+  - component: {fileID: 2067526218}
+  m_Layer: 0
+  m_Name: NoiseGenerator
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2067526218
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2067526217}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d7fed6358b318c946a9e552a721cb317, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldGeneration.NoiseGenerator
+  worldSeed: 42
+  seaLevel: 0
+  octaves: 6
+  baseFrequency: 0.01
+  persistence: 0.5
+  lacunarity: 2
+  heightMultiplier: 75
+  islandFrequency: 0.5
+  islandThreshold: 0.7
+  islandFalloffStrength: 2
+  islandSizeRange: {x: 50, y: 200}
+  voronoiScale: 0.01
+  voronoiCellCount: 10
+  debugTextureSize: 256
+  debugHeightTexture: {fileID: 0}
+  debugMaskTexture: {fileID: 0}
+--- !u!4 &2067526219
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2067526217}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1530613710}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -2562,3 +2933,4 @@ SceneRoots:
   - {fileID: 2016374953}
   - {fileID: 1677181299}
   - {fileID: 1882628171}
+  - {fileID: 1530613710}

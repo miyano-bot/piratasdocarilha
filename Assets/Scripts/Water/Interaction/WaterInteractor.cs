@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.Events;
+using Crest;
 
 /// <summary>
 /// Componente que detecta a interação de um objeto (personagem) com a água.
@@ -33,20 +34,20 @@ public class WaterInteractor : MonoBehaviour
 
     [Header("Depth Thresholds")]
     [Tooltip("Profundidade mínima para considerar água rasa")]
-    [Range(0f, 1f)]
+    [UnityEngine.Range(0f, 1f)]
     public float wadingDepth = 0.1f;
     
     [Tooltip("Profundidade para iniciar natação")]
-    [Range(0.5f, 2f)]
+    [UnityEngine.Range(0.5f, 2f)]
     public float swimmingDepth = 1.2f;
 
     [Header("Movement Modifiers")]
     [Tooltip("Multiplicador de velocidade em água rasa")]
-    [Range(0.3f, 1f)]
+    [UnityEngine.Range(0.3f, 1f)]
     public float wadingSpeedMultiplier = 0.6f;
     
     [Tooltip("Multiplicador de velocidade nadando")]
-    [Range(0.2f, 0.8f)]
+    [UnityEngine.Range(0.2f, 0.8f)]
     public float swimmingSpeedMultiplier = 0.4f;
 
     [Header("Physics")]
@@ -98,7 +99,7 @@ public class WaterInteractor : MonoBehaviour
     #endregion
 
     #region Private Fields
-    private WaterSurface waterSurface;
+    private SampleHeightHelper _sampleHeightHelper = new SampleHeightHelper();
     private Rigidbody rb;
     private CharacterController characterController;
     private PlayerController playerController;
@@ -110,7 +111,6 @@ public class WaterInteractor : MonoBehaviour
     private void Start()
     {
         // Busca referências
-        waterSurface = WaterSurface.Instance;
         rb = GetComponent<Rigidbody>();
         characterController = GetComponent<CharacterController>();
         playerController = GetComponent<PlayerController>();
@@ -126,8 +126,6 @@ public class WaterInteractor : MonoBehaviour
 
     private void Update()
     {
-        if (waterSurface == null || waterSurface.waveSettings == null) return;
-
         UpdateWaterDetection();
         UpdateState();
         UpdateSpeedMultiplier();
@@ -176,8 +174,12 @@ public class WaterInteractor : MonoBehaviour
     private void UpdateWaterDetection()
     {
         Vector3 feetPos = feetPoint.position;
-        CurrentWaterHeight = waterSurface.GetWaterHeight(feetPos);
-        CurrentDepth = CurrentWaterHeight - feetPos.y;
+        _sampleHeightHelper.Init(feetPos, 0f);
+        if (_sampleHeightHelper.Sample(out var height))
+        {
+            CurrentWaterHeight = height;
+            CurrentDepth = CurrentWaterHeight - feetPos.y;
+        }
     }
 
     private void UpdateState()
@@ -185,12 +187,12 @@ public class WaterInteractor : MonoBehaviour
         WaterState newState;
 
         // Verifica se a cabeça está submersa
-        if (waterSurface.IsUnderwater(headPoint.position))
+        if (IsUnderwater(headPoint.position))
         {
             newState = WaterState.Submerged;
         }
         // Verifica se a cintura está na água (natação)
-        else if (waterSurface.IsUnderwater(waistPoint.position) || CurrentDepth >= swimmingDepth)
+        else if (IsUnderwater(waistPoint.position) || CurrentDepth >= swimmingDepth)
         {
             newState = WaterState.Swimming;
         }
@@ -214,6 +216,19 @@ public class WaterInteractor : MonoBehaviour
         }
 
         previousState = CurrentState;
+    }
+
+    private bool IsUnderwater(Vector3 position)
+    {
+        // Use a fresh helper for each query so we don't call Init multiple
+        // times on the same object within a single frame (which Crest warns about).
+        var helper = new SampleHeightHelper();
+        helper.Init(position, 0f);
+        if (helper.Sample(out var height))
+        {
+            return position.y < height;
+        }
+        return false;
     }
 
     private void OnStateChanged(WaterState oldState, WaterState newState)
@@ -285,12 +300,9 @@ public class WaterInteractor : MonoBehaviour
     /// </summary>
     public void ForceUpdateState()
     {
-        if (waterSurface != null)
-        {
-            UpdateWaterDetection();
-            UpdateState();
-            UpdateSpeedMultiplier();
-        }
+        UpdateWaterDetection();
+        UpdateState();
+        UpdateSpeedMultiplier();
     }
 
     /// <summary>
@@ -318,7 +330,7 @@ public class WaterInteractor : MonoBehaviour
         if (headPoint != null) Gizmos.DrawWireSphere(headPoint.position, 0.1f);
 
         // Desenha linha até a superfície da água (em play mode)
-        if (Application.isPlaying && waterSurface != null)
+        if (Application.isPlaying)
         {
             Gizmos.color = IsInWater ? Color.blue : Color.green;
             Vector3 surfacePos = GetSurfacePosition();

@@ -1,5 +1,13 @@
+#if ENABLE_INPUT_SYSTEM
+#define INPUT_SYSTEM_AVAILABLE
+#endif
+
 using UnityEngine;
 using UnityEngine.Events;
+#if INPUT_SYSTEM_AVAILABLE
+using UnityEngine.InputSystem;
+#endif
+using Crest;
 
 /// <summary>
 /// Sistema de interação para entrar/sair de veículos (barcos).
@@ -35,14 +43,15 @@ public class VehicleInteraction : MonoBehaviour
     public Vector3 vehicleCameraOffset = new Vector3(0, 8, -12);
 
     [Header("Events")]
-    public UnityEvent<BoatController> onEnterVehicle;
+    public UnityEvent<BoatProbes> onEnterVehicle;
     public UnityEvent onExitVehicle;
 
     [Header("Debug")]
-    public bool showDebugInfo = false;
+    public bool showDebugInfo = true;
 
     // Estado
-    private BoatController currentVehicle;
+    private BoatProbes currentVehicle;
+    private Transform currentPilotTransform;
     private Transform originalCameraParent;
     private Vector3 originalCameraLocalPos;
     private Quaternion originalCameraLocalRot;
@@ -56,7 +65,7 @@ public class VehicleInteraction : MonoBehaviour
     /// <summary>
     /// Veículo atual sendo pilotado
     /// </summary>
-    public BoatController CurrentVehicle => currentVehicle;
+    public BoatProbes CurrentVehicle => currentVehicle;
 
     private void Start()
     {
@@ -72,7 +81,22 @@ public class VehicleInteraction : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(interactionKey))
+        bool interactionPressed = false;
+#if INPUT_SYSTEM_AVAILABLE
+        if (Keyboard.current != null)
+        {
+            interactionPressed = Keyboard.current.eKey.wasPressedThisFrame;
+        }
+        else
+        {
+            // Fallback para input legado se o teclado não for detectado
+            interactionPressed = Input.GetKeyDown(interactionKey);
+        }
+#else
+        interactionPressed = Input.GetKeyDown(interactionKey);
+#endif
+
+        if (interactionPressed)
         {
             if (IsDriving)
             {
@@ -85,32 +109,41 @@ public class VehicleInteraction : MonoBehaviour
         }
 
         // Atualiza posição do player quando pilotando
-        if (IsDriving && currentVehicle.pilotPosition != null)
+        if (IsDriving && currentPilotTransform != null)
         {
-            transform.position = currentVehicle.pilotPosition.position;
-            transform.rotation = currentVehicle.pilotPosition.rotation;
+            transform.position = currentPilotTransform.position;
+            transform.rotation = currentPilotTransform.rotation;
         }
     }
 
     private void TryEnterNearbyVehicle()
     {
+        if (showDebugInfo) Debug.Log("[VehicleInteraction] Tentando entrar em veículo...");
+
         // Busca veículos próximos
         Collider[] colliders = Physics.OverlapSphere(transform.position, interactionRange, vehicleLayer);
         
-        BoatController nearestBoat = null;
+        if (showDebugInfo) Debug.Log($"[VehicleInteraction] Encontrados {colliders.Length} colliders na layer {vehicleLayer.value}");
+
+        BoatProbes nearestBoat = null;
         float nearestDistance = float.MaxValue;
 
         foreach (var col in colliders)
         {
-            BoatController boat = col.GetComponentInParent<BoatController>();
+            BoatProbes boat = col.GetComponentInParent<BoatProbes>();
             if (boat != null)
             {
                 float dist = Vector3.Distance(transform.position, boat.transform.position);
+                if (showDebugInfo) Debug.Log($"[VehicleInteraction] Barco encontrado: {boat.name} a {dist}m");
                 if (dist < nearestDistance)
                 {
                     nearestDistance = dist;
                     nearestBoat = boat;
                 }
+            }
+            else if (showDebugInfo)
+            {
+                Debug.Log($"[VehicleInteraction] Collider {col.name} não tem BoatProbes no pai.");
             }
         }
 
@@ -118,16 +151,16 @@ public class VehicleInteraction : MonoBehaviour
         {
             EnterVehicle(nearestBoat);
         }
-        else if (showDebugInfo)
+        else
         {
-            Debug.Log("[VehicleInteraction] Nenhum veículo próximo encontrado");
+            if (showDebugInfo) Debug.Log("[VehicleInteraction] Nenhum veículo próximo com BoatProbes encontrado.");
         }
     }
 
     /// <summary>
     /// Entra em um veículo específico
     /// </summary>
-    public void EnterVehicle(BoatController vehicle)
+    public void EnterVehicle(BoatProbes vehicle)
     {
         if (vehicle == null || IsDriving) return;
 
@@ -144,16 +177,17 @@ public class VehicleInteraction : MonoBehaviour
         if (playerVisual != null)
             playerVisual.SetActive(false);
 
-        // Move player para posição do piloto
-        if (vehicle.pilotPosition != null)
-        {
-            transform.position = vehicle.pilotPosition.position;
-            transform.rotation = vehicle.pilotPosition.rotation;
-            transform.SetParent(vehicle.transform);
-        }
+        // Busca o pilotPosition (muitos barcos do Crest usam um Transform filho para isso)
+        currentPilotTransform = vehicle.transform.Find("PilotPosition");
+        if (currentPilotTransform == null) currentPilotTransform = vehicle.transform;
 
-        // Ativa controle do veículo
-        vehicle.SetControllable(true);
+        // Move player para posição do piloto
+        transform.position = currentPilotTransform.position;
+        transform.rotation = currentPilotTransform.rotation;
+        transform.SetParent(vehicle.transform);
+
+        // Ativa controle do veículo no Crest
+        vehicle._playerControlled = true;
 
         // Move câmera para seguir veículo
         if (moveCameraToVehicle && mainCamera != null)
@@ -180,10 +214,10 @@ public class VehicleInteraction : MonoBehaviour
     {
         if (!IsDriving) return;
 
-        BoatController vehicle = currentVehicle;
+        BoatProbes vehicle = currentVehicle;
 
-        // Desativa controle do veículo
-        vehicle.SetControllable(false);
+        // Desativa controle do veículo no Crest
+        vehicle._playerControlled = false;
 
         // Calcula posição de saída (ao lado do barco)
         Vector3 exitPosition = vehicle.transform.position + vehicle.transform.right * 3f;
@@ -214,6 +248,7 @@ public class VehicleInteraction : MonoBehaviour
             playerVisual.SetActive(true);
 
         currentVehicle = null;
+        currentPilotTransform = null;
 
         onExitVehicle?.Invoke();
 
@@ -230,9 +265,19 @@ public class VehicleInteraction : MonoBehaviour
             ExitVehicle();
     }
 
+    private void OnDrawGizmos()
+    {
+        // Desenha range de interação (sempre visível em amarelo claro para Debug)
+        if (showDebugInfo)
+        {
+            Gizmos.color = new Color(1, 1, 0, 0.3f);
+            Gizmos.DrawWireSphere(transform.position, interactionRange);
+        }
+    }
+
     private void OnDrawGizmosSelected()
     {
-        // Desenha range de interação
+        // Desenha range de interação quando selecionado
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, interactionRange);
     }

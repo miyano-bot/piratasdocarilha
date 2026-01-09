@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using Crest;
 
 /// <summary>
 /// UI simples para mostrar prompt de interação quando perto de veículos.
@@ -92,7 +93,7 @@ public class InteractionPromptUI : MonoBehaviour
 
         foreach (var col in colliders)
         {
-            if (col.GetComponentInParent<BoatController>() != null)
+            if (col.GetComponentInParent<BoatProbes>() != null)
             {
                 return true;
             }

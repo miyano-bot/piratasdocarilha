@@ -1,9 +1,9 @@
 using UnityEngine;
 using System.Collections.Generic;
+using Crest;
 
 /// <summary>
-/// Sistema de empuxo (buoyancy) para objetos flutuantes.
-/// Usa pontos de amostragem para calcular força e orientação.
+/// Sistema de empuxo (buoyancy) para objetos flutuantes usando Crest Ocean System.
 /// </summary>
 [RequireComponent(typeof(Rigidbody))]
 public class Buoyancy : MonoBehaviour
@@ -14,7 +14,7 @@ public class Buoyancy : MonoBehaviour
     public float buoyancyForce = 20f;
 
     [Tooltip("Densidade relativa do objeto (menor = mais flutuante)")]
-    [Range(0.1f, 2f)]
+    [UnityEngine.Range(0.1f, 2f)]
     public float objectDensity = 0.5f;
 
     [Tooltip("Altura alvo acima da água (offset de flutuação)")]
@@ -22,20 +22,20 @@ public class Buoyancy : MonoBehaviour
 
     [Header("Damping")]
     [Tooltip("Amortecimento vertical para evitar oscilação")]
-    [Range(0f, 10f)]
+    [UnityEngine.Range(0f, 10f)]
     public float verticalDamping = 3f;
 
     [Tooltip("Amortecimento angular para estabilidade")]
-    [Range(0f, 10f)]
+    [UnityEngine.Range(0f, 10f)]
     public float angularDamping = 4f;
 
     [Header("Wave Response")]
     [Tooltip("Quanto o objeto responde às ondas (0 = ignora ondas)")]
-    [Range(0f, 1f)]
+    [UnityEngine.Range(0f, 1f)]
     public float waveResponse = 0.5f;
 
     [Tooltip("Velocidade de alinhamento com a superfície")]
-    [Range(0.1f, 20f)]
+    [UnityEngine.Range(0.1f, 20f)]
     public float alignmentSpeed = 5f;
 
     [Header("Buoyancy Points")]
@@ -47,7 +47,7 @@ public class Buoyancy : MonoBehaviour
 
     [Header("Performance")]
     [Tooltip("Atualizar a cada N FixedUpdates (1 = todo frame)")]
-    [Range(1, 4)]
+    [UnityEngine.Range(1, 4)]
     public int updateInterval = 1;
 
     [Header("Debug")]
@@ -73,9 +73,8 @@ public class Buoyancy : MonoBehaviour
 
     #region Private Fields
     private Rigidbody rb;
-    private WaterSurface waterSurface;
     private int frameCounter = 0;
-    private Vector3 lastForce;
+    private SampleHeightHelper _sampleHeightHelper = new SampleHeightHelper();
     #endregion
 
     #region Unity Lifecycle
@@ -83,7 +82,6 @@ public class Buoyancy : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         
-        // Auto-detecta pontos de buoyancy nos filhos
         if (autoDetectPoints)
         {
             var childPoints = GetComponentsInChildren<BuoyancyPoint>();
@@ -96,23 +94,16 @@ public class Buoyancy : MonoBehaviour
             }
         }
 
-        // Se não há pontos, cria um central
         if (buoyancyPoints.Count == 0)
         {
             CreateDefaultBuoyancyPoints();
         }
     }
 
-    private void Start()
-    {
-        waterSurface = WaterSurface.Instance;
-    }
-
     private void FixedUpdate()
     {
-        if (waterSurface == null || waterSurface.waveSettings == null) return;
+        if (OceanRenderer.Instance == null) return;
 
-        // Otimização: atualiza a cada N frames
         frameCounter++;
         if (frameCounter < updateInterval) return;
         frameCounter = 0;
@@ -133,36 +124,35 @@ public class Buoyancy : MonoBehaviour
         {
             if (point == null) continue;
 
-            // Atualiza detecção de água no ponto
-            point.UpdateWaterDetection(waterSurface);
-
-            if (point.IsSubmerged)
+            // Amostragem do Crest
+            _sampleHeightHelper.Init(point.SamplePosition, 0f);
+            if (_sampleHeightHelper.Sample(out float height, out Vector3 normal))
             {
-                submergedCount++;
-                
-                // Calcula força de empuxo proporcional à submersão
-                float submersion = Mathf.Clamp01(point.CurrentDepth / floatHeight);
-                float force = buoyancyForce * submersion * point.weight / objectDensity;
+                point.SetWaterData(height);
 
-                // Aplica força no ponto
-                Vector3 forceVector = Vector3.up * force;
-                rb.AddForceAtPosition(forceVector, point.SamplePosition, ForceMode.Force);
-                
-                totalForce += forceVector;
-
-                // Acumula normal para orientação
-                var (_, normal) = waterSurface.GetWaterData(point.SamplePosition);
-                totalNormal += normal * point.weight;
-                totalWeight += point.weight;
-
-                if (showDebugForces)
+                if (point.IsSubmerged)
                 {
-                    Debug.DrawRay(point.SamplePosition, forceVector * 0.1f, Color.green);
+                    submergedCount++;
+                    
+                    float submersion = Mathf.Clamp01(point.CurrentDepth / floatHeight);
+                    float force = buoyancyForce * submersion * point.weight / objectDensity;
+
+                    Vector3 forceVector = Vector3.up * force;
+                    rb.AddForceAtPosition(forceVector, point.SamplePosition, ForceMode.Force);
+                    
+                    totalForce += forceVector;
+                    totalNormal += normal * point.weight;
+                    totalWeight += point.weight;
+
+                    if (showDebugForces)
+                    {
+                        Debug.DrawRay(point.SamplePosition, forceVector * 0.1f, Color.green);
+                        Debug.DrawRay(point.SamplePosition, normal, Color.blue);
+                    }
                 }
             }
         }
 
-        // Atualiza estado
         IsInWater = submergedCount > 0;
         SubmersionPercent = buoyancyPoints.Count > 0 ? (float)submergedCount / buoyancyPoints.Count : 0f;
         
@@ -171,9 +161,6 @@ public class Buoyancy : MonoBehaviour
             AverageSurfaceNormal = (totalNormal / totalWeight).normalized;
         }
 
-        lastForce = totalForce;
-
-        // Aplica damping e alinhamento
         if (IsInWater)
         {
             ApplyDamping();
