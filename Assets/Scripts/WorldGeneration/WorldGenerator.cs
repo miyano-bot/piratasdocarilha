@@ -133,6 +133,13 @@ namespace WorldGeneration
             // Initialize chunk manager (will generate initial chunks)
             chunkManager.Initialize();
 
+            // Optionally place objects automatically after world generation
+            if (placeObjectsAutomatically && objectPlacer != null)
+            {
+                // Seed object placement on the origin chunk
+                objectPlacer.PlaceObjectsOnChunk(new Vector2Int(0, 0), 100);
+            }
+
             isInitialized = true;
             isGenerating = false;
             

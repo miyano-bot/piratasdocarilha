@@ -255,6 +255,7 @@ namespace Crest
 
         internal void AddCommandBufferToPrimaryLight()
         {
+            if (!IsUsingBuiltInRenderPipeline()) return;
             if (_mainLight == null || BufCopyShadowMap == null) return;
             _mainLight.RemoveCommandBuffer(LightEvent.BeforeScreenspaceMask, BufCopyShadowMap);
             _mainLight.AddCommandBuffer(LightEvent.BeforeScreenspaceMask, BufCopyShadowMap);
@@ -262,6 +263,7 @@ namespace Crest
 
         internal void RemoveCommandBufferFromPrimaryLight()
         {
+            if (!IsUsingBuiltInRenderPipeline()) return;
             if (_mainLight == null || BufCopyShadowMap == null) return;
             _mainLight.RemoveCommandBuffer(LightEvent.BeforeScreenspaceMask, BufCopyShadowMap);
         }
@@ -355,6 +357,12 @@ namespace Crest
             }
         }
 
+        // Returns true if using the built-in render pipeline (no SRP is active)
+        private static bool IsUsingBuiltInRenderPipeline()
+        {
+            return GraphicsSettings.currentRenderPipeline == null;
+        }
+
         void SetUpShadowCommandBuffers()
         {
             BufCopyShadowMap = new CommandBuffer();
@@ -381,6 +389,8 @@ namespace Crest
 
         void SetUpScreenSpaceShadows()
         {
+            if (!IsUsingBuiltInRenderPipeline()) return;
+
             // Make the screen-space shadow texture available for the ocean shader for caustic occlusion.
             _screenSpaceShadowMapCommandBuffer = new CommandBuffer()
             {
@@ -393,13 +403,15 @@ namespace Crest
         void CleanUpScreenSpaceShadows()
         {
             if (_screenSpaceShadowMapCommandBuffer == null) return;
-            if (_mainLight != null) _mainLight.RemoveCommandBuffer(LightEvent.AfterScreenspaceMask, _screenSpaceShadowMapCommandBuffer);
+            if (_mainLight != null && IsUsingBuiltInRenderPipeline()) _mainLight.RemoveCommandBuffer(LightEvent.AfterScreenspaceMask, _screenSpaceShadowMapCommandBuffer);
             _screenSpaceShadowMapCommandBuffer.Release();
             _screenSpaceShadowMapCommandBuffer = null;
         }
 
         void SetUpDeferredShadows()
         {
+            if (!IsUsingBuiltInRenderPipeline()) return;
+
             // Make the screen-space shadow texture available for the ocean shader for caustic occlusion.
             _deferredShadowMapCommandBuffer = new CommandBuffer()
             {
@@ -412,7 +424,7 @@ namespace Crest
         void CleanUpDeferredShadows()
         {
             if (_deferredShadowMapCommandBuffer == null) return;
-            if (_mainLight != null) _mainLight.RemoveCommandBuffer(LightEvent.AfterShadowMap, _deferredShadowMapCommandBuffer);
+            if (_mainLight != null && IsUsingBuiltInRenderPipeline()) _mainLight.RemoveCommandBuffer(LightEvent.AfterShadowMap, _deferredShadowMapCommandBuffer);
             _deferredShadowMapCommandBuffer.Release();
             _deferredShadowMapCommandBuffer = null;
         }

@@ -78,15 +78,27 @@ namespace WorldGeneration
         {
             if (noiseGenerator == null)
             {
+#if UNITY_2023_1_OR_NEWER
+                noiseGenerator = Object.FindFirstObjectByType<NoiseGenerator>();
+#else
                 noiseGenerator = FindObjectOfType<NoiseGenerator>();
+#endif
             }
             if (biomeManager == null)
             {
+#if UNITY_2023_1_OR_NEWER
+                biomeManager = Object.FindFirstObjectByType<BiomeManager>();
+#else
                 biomeManager = FindObjectOfType<BiomeManager>();
+#endif
             }
             if (chunkManager == null)
             {
+#if UNITY_2023_1_OR_NEWER
+                chunkManager = Object.FindFirstObjectByType<ChunkManager>();
+#else
                 chunkManager = FindObjectOfType<ChunkManager>();
+#endif
             }
         }
 

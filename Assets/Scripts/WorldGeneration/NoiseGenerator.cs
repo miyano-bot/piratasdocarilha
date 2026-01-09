@@ -252,8 +252,9 @@ namespace WorldGeneration
         /// </summary>
         private Vector2 GetCellCenter(int cellX, int cellZ)
         {
-            // Use cell coordinates to seed random position
-            int hash = Hash2D(cellX, cellZ);
+            // Use cell coordinates to seed random position. Include voronoiCellCount
+            // in the hash to make the field purposeful and avoid unused field warnings.
+            int hash = Hash2D(cellX, cellZ) ^ voronoiCellCount;
             System.Random cellRng = new System.Random(hash + worldSeed);
 
             float randX = (float)cellRng.NextDouble();

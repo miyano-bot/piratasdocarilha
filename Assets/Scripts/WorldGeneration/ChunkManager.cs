@@ -78,7 +78,11 @@ namespace WorldGeneration
         {
             if (noiseGenerator == null)
             {
+#if UNITY_2023_1_OR_NEWER
+                noiseGenerator = Object.FindFirstObjectByType<NoiseGenerator>();
+#else
                 noiseGenerator = FindObjectOfType<NoiseGenerator>();
+#endif
                 if (noiseGenerator == null)
                 {
                     Debug.LogError("ChunkManager: NoiseGenerator not found!");
